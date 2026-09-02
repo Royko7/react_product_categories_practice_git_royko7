@@ -15,11 +15,18 @@ const products = productsFromServer.map(product => {
   return { ...product, category, user };
 });
 
-function getVisibleProducts(allProducts, userId) {
+function getVisibleProducts(allProducts, userId, query) {
   let result = allProducts;
+  const formatedQuery = query.trim().toLowerCase();
 
   if (userId) {
     result = result.filter(product => product.user.id === userId);
+  }
+
+  if (query) {
+    result = result.filter(
+      film => film.name.toLowerCase().includes(formatedQuery), // цю війну з комою я програв((((
+    );
   }
 
   return result;
@@ -27,8 +34,8 @@ function getVisibleProducts(allProducts, userId) {
 
 export const App = () => {
   const [selectedUser, setSelectedUser] = useState(0);
-
-  const visibleProducts = getVisibleProducts(products, selectedUser);
+  const [query, setQuery] = useState('');
+  const visibleProducts = getVisibleProducts(products, selectedUser, query);
 
   return (
     <div className="section">
@@ -72,7 +79,7 @@ export const App = () => {
                   type="text"
                   className="input"
                   placeholder="Search"
-                  value="qwe"
+                  onChange={event => setQuery(event.target.value)}
                 />
 
                 <span className="icon is-left">
@@ -81,11 +88,15 @@ export const App = () => {
 
                 <span className="icon is-right">
                   {/* eslint-disable-next-line jsx-a11y/control-has-associated-label */}
-                  <button
-                    data-cy="ClearButton"
-                    type="button"
-                    className="delete"
-                  />
+                  {query ? (
+                    <button
+                      data-cy="ClearButton"
+                      type="button"
+                      className="delete"
+                    />
+                  ) : (
+                    ''
+                  )}
                 </span>
               </p>
             </div>
