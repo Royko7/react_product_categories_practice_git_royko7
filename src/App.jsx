@@ -1,7 +1,7 @@
 /* eslint-disable jsx-a11y/accessible-emoji */
-import React, { useState } from 'react';
 import './App.scss';
-
+import { useState } from 'react';
+import classNames from 'classnames';
 import usersFromServer from './api/users';
 import categoriesFromServer from './api/categories';
 import productsFromServer from './api/products';
@@ -15,12 +15,20 @@ const products = productsFromServer.map(product => {
   return { ...product, category, user };
 });
 
+function getVisibleProducts(allProducts, userId) {
+  let result = allProducts;
+
+  if (userId) {
+    result = result.filter(product => product.user.id === userId);
+  }
+
+  return result;
+}
+
 export const App = () => {
-  const [product, setProduct] = useState('');
+  const [selectedUser, setSelectedUser] = useState(0);
 
-  const visibleProducts = products;
-
-  console.log(visibleProducts);
+  const visibleProducts = getVisibleProducts(products, selectedUser);
 
   return (
     <div className="section">
@@ -32,21 +40,29 @@ export const App = () => {
             <p className="panel-heading">Filters</p>
 
             <p className="panel-tabs has-text-weight-bold">
-              <a data-cy="FilterAllUsers" href="#/">
+              <a
+                data-cy="FilterAllUsers"
+                onClick={() => setSelectedUser(0)}
+                href="#/"
+                className={classNames({ 'is-active': selectedUser === 0 })}
+              >
                 All
               </a>
-
-              <a data-cy="FilterUser" href="#/">
-                User 1
-              </a>
-
-              <a data-cy="FilterUser" href="#/" className="is-active">
-                User 2
-              </a>
-
-              <a data-cy="FilterUser" href="#/">
-                User 3
-              </a>
+              {usersFromServer.map(user => (
+                <a
+                  data-cy="FilterUser"
+                  href="#/"
+                  className={classNames({
+                    'is-active': user.id === selectedUser,
+                  })}
+                  key={user.id}
+                  onClick={() => {
+                    setSelectedUser(user.id);
+                  }}
+                >
+                  {user.name}
+                </a>
+              ))}
             </p>
 
             <div className="panel-block">
@@ -178,15 +194,12 @@ export const App = () => {
 
             <tbody>
               {visibleProducts.map(item => (
-                <tr data-cy="Product">
+                <tr data-cy="Product" key={item.id}>
                   <td className="has-text-weight-bold" data-cy="ProductId">
                     {item.id}
                   </td>
 
-                  <td data-cy="ProductName">
-                    {' '}
-                    {item.name} key={item.id}
-                  </td>
+                  <td data-cy="ProductName">{item.name}</td>
                   <td data-cy="ProductCategory">
                     {item.category.icon} - {item.category.title}
                   </td>
